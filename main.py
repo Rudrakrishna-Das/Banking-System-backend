@@ -22,7 +22,8 @@ col = DATABASE()
 
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', 'https://safebankrudra.netlify.app')
+    # response.headers.add('Access-Control-Allow-Origin', 'https://safebankrudra.netlify.app')
+    response.headers.add('Access-Control-Allow-Origin', 'http://127.0.0.1:5500')
     response.headers.add('Access-Control-Allow-Credentials', 'true')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type') 
     return response
@@ -51,7 +52,6 @@ def sign_up():
 # SIGN-IN
 @app.route('/sign-in',methods=['POST','GET'])
 def sign_in():
-    # 
     data = request.get_json()
 
     user = col.user_collection.find_one({'email':data['email']})
@@ -312,4 +312,4 @@ def delete_user():
     res.set_cookie('token','',max_age=0,samesite='None')
     return res
     
-app.run(debug=True)
+app.run(host='0.0.0.0', port=5000,debug=True)
