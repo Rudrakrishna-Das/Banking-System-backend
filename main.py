@@ -22,8 +22,7 @@ col = DATABASE()
 
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', 'https://safebankrudra.netlify.app')
-    # response.headers.add('Access-Control-Allow-Origin', 'http://127.0.0.1:5500')
+    response.headers.add('Access-Control-Allow-Origin', '*')
     response.headers.add('Access-Control-Allow-Credentials', 'true')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type') 
     return response
