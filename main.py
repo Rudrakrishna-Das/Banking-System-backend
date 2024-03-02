@@ -22,8 +22,7 @@ col = DATABASE()
 
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', 'http://127.0.0.1:5500')
-    # response.headers.add('Access-Control-Allow-Origin', 'https://safebankrudra.netlify.app')
+    response.headers.add('Access-Control-Allow-Origin', 'https://safebankrudra.netlify.app')
     response.headers.add('Access-Control-Allow-Credentials', 'true')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type') 
     return response
@@ -55,7 +54,6 @@ def sign_in():
     data = request.get_json()
 
     user = col.user_collection.find_one({'email':data['email']})
-    
     if user == None:
         return jsonify(share_message(success=False,message='Please Check your email id and try Again!'))
     if not bcrypt.checkpw(data['password'].encode('utf-8'),user['password']):
@@ -235,18 +233,17 @@ def forgot_password():
     email = request.get_json()
     filter = {'email':email['email']}
     user = col.user_collection.find_one(filter)
-    email = user['email']
     if user == None:
         return jsonify(share_message(success=False,message='No user found. Please check your email'))
+    email = user['email']
     pin = generate_pin()
     my_email = os.getenv('MY_EMAIL')
     my_password = os.getenv('PASSWORD')
-    to_send = user['email']
 
     connection = smtplib.SMTP('smtp.gmail.com',port=587)
     connection.starttls()
     connection.login(user=my_email,password=my_password)
-    connection.sendmail(from_addr=my_email,to_addrs=to_send,msg=f"Subject:OTP pin\n\n{pin}")
+    connection.sendmail(from_addr=my_email,to_addrs=email,msg=f"Subject:OTP pin\n\n{pin}")
     
     return jsonify(share_message(success=True,message='user found'))
 
@@ -256,9 +253,15 @@ def match_pin():
     global pin,email
     user_pin = request.get_json()
     if int(user_pin['userPin']) != pin:
-        pin = ''
-        email = ''
-        return jsonify(share_message(success=False,message='Entered wrong pin'))    
+        pin = generate_pin()
+        my_email = os.getenv('MY_EMAIL')
+        my_password = os.getenv('PASSWORD')
+
+        connection = smtplib.SMTP('smtp.gmail.com',port=587)
+        connection.starttls()
+        connection.login(user=my_email,password=my_password)
+        connection.sendmail(from_addr=my_email,to_addrs=email,msg=f"Subject:OTP pin\n\n{pin}")
+        return jsonify(share_message(success=False,message='Entered wrong pin! Shared Another pin!'))    
     pin = ''
     return jsonify(share_message(success=True,message=''))
 
